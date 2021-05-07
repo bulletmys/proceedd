@@ -1,0 +1,4 @@
+kv:
+  port: 8080
+  start_version: 1
+  refresh_timeout: 50s

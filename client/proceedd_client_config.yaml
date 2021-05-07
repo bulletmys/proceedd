@@ -1,0 +1,6 @@
+kv:
+  addr: http://localhost:8080
+  conf_diff_url: /azaz
+  conf_full_url: /config/full
+  config_path: kek3
+  refresh_timeout: 5s
