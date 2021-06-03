@@ -1,6 +1,9 @@
 kv:
-  addr: http://localhost:8080
-  conf_diff_url: /azaz
+  addr: http://localhost:8000
+  conf_diff_url: /config/diff
   conf_full_url: /config/full
-  config_path: kek3
+  config_path: cfg.yaml
   refresh_timeout: 5s
+
+balancer:
+  server_port: "5000"

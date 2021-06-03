@@ -22,6 +22,16 @@ type KVUpdater struct {
 	LastModified   int64
 }
 
+type ConfigDiff struct {
+	Upd map[string]interface{}
+	Del []string
+}
+
+type ConfigFull struct {
+	Config       map[string]interface{}
+	LastModified int64
+}
+
 func initKVUpdater(c *config.Config) (*KVUpdater, error) {
 	addr, err := c.GetString("kv.addr")
 	if err != nil {
@@ -69,22 +79,12 @@ func initKVUpdater(c *config.Config) (*KVUpdater, error) {
 func (c *KVUpdater) writeConfFile() {
 	// Clear file content before write
 	c.File.Truncate(0)
-	c.File.Seek(0,0)
+	c.File.Seek(0, 0)
 
 	encoder := yaml.NewEncoder(c.File)
 	if err := encoder.Encode(c.Config); err != nil {
 		log.Printf("failed to write config file: %v", err)
 	}
-}
-
-type ConfigDiff struct {
-	Upd map[string]interface{}
-	Del []string
-}
-
-type ConfigFull struct {
-	Config       map[string]interface{}
-	LastModified int64
 }
 
 func (c *KVUpdater) updFullConfig(data io.ReadCloser) error {

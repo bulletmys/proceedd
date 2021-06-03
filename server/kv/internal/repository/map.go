@@ -12,6 +12,11 @@ import (
 	"time"
 )
 
+type Version struct {
+	V uint64
+	models.KVDiff
+}
+
 type KVMapRepository struct {
 	Config       map[string]interface{}
 	lastModified int64
@@ -24,30 +29,6 @@ type KVMapRepository struct {
 	MinVersion  uint64
 	LastVersion uint64
 	verMutex    *sync.RWMutex
-}
-
-// fileUpdater overwrites the config file when data is updated
-func (r *KVMapRepository) fileUpdater() {
-	lastUpdateTS := int64(-1)
-
-	for {
-		if lastUpdateTS != atomic.LoadInt64(&r.lastModified) {
-			// Clear file content before write
-			log.Println(r.configFile.Truncate(0))
-			log.Println(r.configFile.Seek(0, 0))
-
-			encoder := yaml.NewEncoder(r.configFile)
-
-			r.cfgMutex.RLock()
-			if err := encoder.Encode(r.Config); err != nil {
-				log.Printf("failed to upd config file: %v", err)
-			}
-			lastUpdateTS = r.lastModified
-			r.cfgMutex.RUnlock()
-		}
-
-		time.Sleep(30 * time.Second) //TODO move to app conf and add graceful
-	}
 }
 
 func NewKVMapRepository() (*KVMapRepository, error) {
@@ -75,9 +56,28 @@ func NewKVMapRepository() (*KVMapRepository, error) {
 	return repo, nil
 }
 
-type Version struct {
-	V uint64
-	models.KVDiff
+// fileUpdater overwrites the config file when data is updated
+func (r *KVMapRepository) fileUpdater() {
+	lastUpdateTS := int64(-1)
+
+	for {
+		if lastUpdateTS != atomic.LoadInt64(&r.lastModified) {
+			// Clear file content before write
+			log.Println(r.configFile.Truncate(0))
+			log.Println(r.configFile.Seek(0, 0))
+
+			encoder := yaml.NewEncoder(r.configFile)
+
+			r.cfgMutex.RLock()
+			if err := encoder.Encode(r.Config); err != nil {
+				log.Printf("failed to upd config file: %v", err)
+			}
+			lastUpdateTS = r.lastModified
+			r.cfgMutex.RUnlock()
+		}
+
+		time.Sleep(30 * time.Second) //TODO move to app conf and add graceful
+	}
 }
 
 func (r *KVMapRepository) GetFullConfig(timestamp int64) (models.KVFull, error) {

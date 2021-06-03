@@ -1,8 +1,7 @@
-dfsdf:
+field: 132
+name: '"testName"'
+name2:
+  flag: true
+sample:
   test: "1234"
-fgdfg: "1111111"
-kek: '"azaza"'
-kek2:
-  ahahha: fuck
-lol: 132
-test1: 123
+test: "11111"
