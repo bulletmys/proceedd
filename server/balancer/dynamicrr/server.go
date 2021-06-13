@@ -101,8 +101,8 @@ func (s *Server) updateWeight(averageCpu, averageMem int32, weightCoef float64, 
 	cpuUtil := atomic.LoadInt32(&s.resources.cpuUtil)
 	memUsed := atomic.LoadInt32(&s.resources.memUsed)
 
-	cpuCoef := float64(averageCpu) / float64(cpuUtil)
-	memCoef := float64(averageMem) / float64(memUsed)
+	cpuCoef := float64(averageCpu)/float64(cpuUtil) + 0.001
+	memCoef := float64(averageMem)/float64(memUsed) + 0.001
 
 	var newWeight float64
 
