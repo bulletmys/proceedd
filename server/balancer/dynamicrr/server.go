@@ -108,12 +108,12 @@ func (s *Server) updateWeight(averageCpu, averageMem int32, weightCoef float64, 
 
 	switch wType {
 	case 1:
-		newWeight = math.Round(weight * cpuCoef * memCoef * weightCoef)
+		newWeight = math.Round(weight * cpuCoef * weightCoef)
 	case 2:
-		newWeight = math.Round(float64(s.weight.getStartWeight()) * math.Pow((cpuCoef+memCoef)/2, weightCoef))
+		newWeight = math.Round(float64(s.weight.getStartWeight()) * math.Pow((cpuCoef)/2, weightCoef))
 	case 3:
-		wCoef := math.Abs(float64(s.weight.getStartWeight())/weight - 1)
-		newWeight = math.Round(weight * math.Pow((cpuCoef+memCoef+wCoef)/3, weightCoef))
+		wCoef := float64(s.weight.getStartWeight())/weight
+		newWeight = math.Round(weight * math.Pow((cpuCoef+wCoef)/3, weightCoef))
 	}
 
 	lowBound := math.Round(weight * (1.0 - wStep))

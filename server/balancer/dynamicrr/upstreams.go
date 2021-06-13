@@ -91,7 +91,7 @@ func (u *Upstreams) updateAverageResources() {
 			atomic.StoreInt32(&u.averageResources.cpuUtil, cpuSum/aliveCount)
 			atomic.StoreInt32(&u.averageResources.memUsed, memSum/aliveCount)
 		}
-		time.Sleep(u.cfg.CheckInterval)
+		time.Sleep(u.cfg.CheckInterval/2)
 	}
 }
 
