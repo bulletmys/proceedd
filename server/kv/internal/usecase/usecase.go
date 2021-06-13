@@ -10,11 +10,11 @@ type KVUseCase struct {
 }
 
 func (uc KVUseCase) GetFullConfig(timestamp int64) (models.KVFull, error) {
-	return uc.Repo.GetFullConfig(timestamp)
+	return uc.Repo.FullConfig(timestamp)
 }
 
 func (uc KVUseCase) GetDiffConfig(version uint64) (models.KVDiff, error) {
-	return uc.Repo.GetDiffConfig(version)
+	return models.KVDiff{}, nil
 }
 
 func (uc KVUseCase) UpdConfig(data map[string][]string, jsonData models.KVDiff) error {
