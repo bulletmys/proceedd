@@ -58,27 +58,27 @@ func (d KVDelivery) GetFullConfig(c echo.Context) error {
 	c.Response().WriteHeader(http.StatusOK)
 	return json.NewEncoder(c.Response()).Encode(fullConfig)
 }
-
-// Not implemented yet
-func (d KVDelivery) GetDiffConfig(c echo.Context) error {
-	versionParam := c.QueryParam("version")
-	version, err := strconv.ParseUint(versionParam, 10, 64)
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, models.Error{Err: "bad version param"})
-	}
-
-	diffConfig, err := d.uc.GetDiffConfig(version)
-	switch err {
-	case models.VersionNotModified:
-		return c.NoContent(http.StatusNotModified)
-	case models.OldVersionRequested:
-		return c.JSON(http.StatusNotFound, models.Error{Err: "requested version is too old"})
-	case nil:
-	default:
-		return c.JSON(http.StatusBadRequest, models.Error{Err: err.Error()})
-	}
-
-	c.Response().Header().Set(echo.HeaderContentType, echo.MIMEApplicationJSONCharsetUTF8)
-	c.Response().WriteHeader(http.StatusOK)
-	return json.NewEncoder(c.Response()).Encode(diffConfig)
-}
+//
+//// Not implemented yet
+//func (d KVDelivery) GetDiffConfig(c echo.Context) error {
+//	versionParam := c.QueryParam("version")
+//	version, err := strconv.ParseUint(versionParam, 10, 64)
+//	if err != nil {
+//		return c.JSON(http.StatusBadRequest, models.Error{Err: "bad version param"})
+//	}
+//
+//	diffConfig, err := d.uc.GetDiffConfig(version)
+//	switch err {
+//	case models.VersionNotModified:
+//		return c.NoContent(http.StatusNotModified)
+//	case models.OldVersionRequested:
+//		return c.JSON(http.StatusNotFound, models.Error{Err: "requested version is too old"})
+//	case nil:
+//	default:
+//		return c.JSON(http.StatusBadRequest, models.Error{Err: err.Error()})
+//	}
+//
+//	c.Response().Header().Set(echo.HeaderContentType, echo.MIMEApplicationJSONCharsetUTF8)
+//	c.Response().WriteHeader(http.StatusOK)
+//	return json.NewEncoder(c.Response()).Encode(diffConfig)
+//}

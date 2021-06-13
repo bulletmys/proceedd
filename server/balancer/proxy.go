@@ -16,7 +16,7 @@ type Proxy struct {
 	balancer domain.Balancer
 }
 
-func initConfigForDynamicRR(c *config.Config) (domain.TimeoutsConfig, []domain.HostsConfig, int) {
+func initConfigForDynamicRR(c *config.Config) (domain.UpstreamsConfig, []domain.HostsConfig, int) {
 	upsAddr, err := c.Get("balancer.upstreams")
 	if err != nil {
 		log.Fatalf("failed to read config: %v", err)
@@ -85,11 +85,29 @@ func initConfigForDynamicRR(c *config.Config) (domain.TimeoutsConfig, []domain.H
 		log.Fatalf("failed to parse config: %v", err)
 	}
 
-	return domain.TimeoutsConfig{
+	weightCoef, err := c.GetFloat("balancer.weight_coef")
+	if err != nil {
+		log.Fatalf("failed to parse config: %v", err)
+	}
+
+	wType, err := c.GetInt("balancer.weight_type")
+	if err != nil {
+		log.Fatalf("failed to parse config: %v", err)
+	}
+
+	wMaxStep, err := c.GetFloat("balancer.weight_max_step")
+	if err != nil {
+		log.Fatalf("failed to parse config: %v", err)
+	}
+
+	return domain.UpstreamsConfig{
 		CheckInterval: checkIntervalDuration,
 		ReadTimeout:   readTimeoutDuration,
 		WriteTimeout:  writeTimeoutDuration,
 		DialTimeout:   dialTimeoutDuration,
+		WeightCoef:    weightCoef,
+		WeightType:    wType,
+		WeightMaxStep: wMaxStep,
 	}, upstreamsAddr, port
 
 }

@@ -12,11 +12,14 @@ type HostsConfig struct {
 	Weight      int
 }
 
-type TimeoutsConfig struct {
+type UpstreamsConfig struct {
 	CheckInterval time.Duration
 	ReadTimeout   time.Duration
 	WriteTimeout  time.Duration
 	DialTimeout   time.Duration
+	WeightCoef    float64
+	WeightType    int
+	WeightMaxStep float64
 }
 
 type Balancer interface {

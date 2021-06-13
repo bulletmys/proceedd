@@ -14,7 +14,7 @@ import (
 
 type KVUpdater struct {
 	KVStorageAddr  string
-	GetDiffConfUrl string
+	//GetDiffConfUrl string
 	GetFullConfUrl string
 	RefreshTimeout time.Duration
 	File           *os.File
@@ -22,10 +22,10 @@ type KVUpdater struct {
 	LastModified   int64
 }
 
-type ConfigDiff struct {
-	Upd map[string]interface{}
-	Del []string
-}
+//type ConfigDiff struct {
+//	Upd map[string]interface{}
+//	Del []string
+//}
 
 type ConfigFull struct {
 	Config       map[string]interface{}
@@ -38,10 +38,10 @@ func initKVUpdater(c *config.Config) (*KVUpdater, error) {
 		return nil, err
 	}
 
-	diffConfUrl, err := c.GetString("kv.conf_diff_url")
-	if err != nil {
-		return nil, err
-	}
+	//diffConfUrl, err := c.GetString("kv.conf_diff_url")
+	//if err != nil {
+	//	return nil, err
+	//}
 
 	fullConfUrl, err := c.GetString("kv.conf_full_url")
 	if err != nil {
@@ -71,7 +71,7 @@ func initKVUpdater(c *config.Config) (*KVUpdater, error) {
 		KVStorageAddr:  addr,
 		RefreshTimeout: refreshTimeout,
 		File:           f,
-		GetDiffConfUrl: diffConfUrl,
+		//GetDiffConfUrl: diffConfUrl,
 		GetFullConfUrl: fullConfUrl,
 	}, nil
 }
@@ -101,27 +101,27 @@ func (c *KVUpdater) updFullConfig(data io.ReadCloser) error {
 
 	return nil
 }
-
-func (c *KVUpdater) updDiffConfig(data io.ReadCloser) error {
-	var configDiff ConfigDiff
-
-	decoder := json.NewDecoder(data)
-	if err := decoder.Decode(&configDiff); err != nil {
-		return err
-	}
-
-	for _, key := range configDiff.Del {
-		delete(c.Config, key)
-	}
-	for k, v := range configDiff.Upd {
-		c.Config[k] = v
-	}
-	if len(configDiff.Upd) > 0 || len(configDiff.Del) > 0 {
-		c.writeConfFile()
-	}
-
-	return nil
-}
+//
+//func (c *KVUpdater) updDiffConfig(data io.ReadCloser) error {
+//	var configDiff ConfigDiff
+//
+//	decoder := json.NewDecoder(data)
+//	if err := decoder.Decode(&configDiff); err != nil {
+//		return err
+//	}
+//
+//	for _, key := range configDiff.Del {
+//		delete(c.Config, key)
+//	}
+//	for k, v := range configDiff.Upd {
+//		c.Config[k] = v
+//	}
+//	if len(configDiff.Upd) > 0 || len(configDiff.Del) > 0 {
+//		c.writeConfFile()
+//	}
+//
+//	return nil
+//}
 
 func (c *KVUpdater) getConfig(client *http.Client, apiUrl string, configParser func(data io.ReadCloser) error) error {
 	resp, err := client.Get(apiUrl)
@@ -147,8 +147,8 @@ func (c *KVUpdater) updater(client *http.Client, cfgDiffFeature bool) {
 	apiUrl := fmt.Sprintf("%v%v?ts=%v", c.KVStorageAddr, c.GetFullConfUrl, c.LastModified)
 	configParser := c.updFullConfig
 	if cfgDiffFeature {
-		apiUrl = fmt.Sprintf("%v%v", c.KVStorageAddr, c.GetDiffConfUrl)
-		configParser = c.updDiffConfig
+		//apiUrl = fmt.Sprintf("%v%v", c.KVStorageAddr, c.GetDiffConfUrl)
+		//configParser = c.updDiffConfig
 	}
 
 	for {
@@ -161,7 +161,7 @@ func (c *KVUpdater) updater(client *http.Client, cfgDiffFeature bool) {
 
 		apiUrl = fmt.Sprintf("%v%v?ts=%v", c.KVStorageAddr, c.GetFullConfUrl, c.LastModified)
 		if cfgDiffFeature {
-			apiUrl = fmt.Sprintf("%v%v", c.KVStorageAddr, c.GetDiffConfUrl)
+			//apiUrl = fmt.Sprintf("%v%v", c.KVStorageAddr, c.GetDiffConfUrl)
 		}
 
 		time.Sleep(c.RefreshTimeout)

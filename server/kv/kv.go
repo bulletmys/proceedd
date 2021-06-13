@@ -21,7 +21,7 @@ func InitKV() delivery.KVDelivery {
 	return delivery.NewKVDelivery(uc)
 }
 
-func Start(c *config.Config) error {
+func Start(c *config.Config) error {//todo graceful shutdown with config saving
 	kvDelivery := InitKV()
 
 	port, err := c.GetInt("kv.port")

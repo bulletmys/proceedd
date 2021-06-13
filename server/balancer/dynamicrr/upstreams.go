@@ -11,12 +11,12 @@ import (
 type Upstreams struct {
 	servers          []Server
 	averageResources ServerResources
-	cfg              domain.TimeoutsConfig
+	cfg              domain.UpstreamsConfig
 	done             <-chan struct{}
 	proxyChan        chan *Server
 }
 
-func NewUpstreams(timeouts domain.TimeoutsConfig, hosts []domain.HostsConfig, done <-chan struct{}) (*Upstreams, error) {
+func NewUpstreams(timeouts domain.UpstreamsConfig, hosts []domain.HostsConfig, done <-chan struct{}) (*Upstreams, error) {
 	servers, err := InitServers(hosts)
 	if err != nil {
 		return nil, err
@@ -86,7 +86,7 @@ func (u *Upstreams) updateAverageResources() {
 			memSum += atomic.LoadInt32(&u.servers[i].resources.memUsed)
 		}
 		if aliveCount == 0 {
-			log.Printf("CRITICAL: no alive serves")
+			log.Println("CRITICAL: no alive servers")
 		} else {
 			atomic.StoreInt32(&u.averageResources.cpuUtil, cpuSum/aliveCount)
 			atomic.StoreInt32(&u.averageResources.memUsed, memSum/aliveCount)

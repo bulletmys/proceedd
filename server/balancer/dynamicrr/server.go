@@ -23,6 +23,7 @@ type ServerResources struct {
 type Weight struct {
 	weight1      int32
 	weight2      int32
+	startWeight  int32
 	actualWeight int32
 }
 
@@ -81,6 +82,11 @@ func (s *Weight) getWeight() int32 {
 	return atomic.LoadInt32(&s.weight2)
 }
 
+// getStartWeight returns start weight of server
+func (s *Weight) getStartWeight() int32 {
+	return s.startWeight
+}
+
 // getBothWeights return actual and previous weight of server
 func (s *Weight) getBothWeights() (actual, previous int32) {
 	if atomic.LoadInt32(&s.actualWeight) == 0 {
@@ -89,8 +95,8 @@ func (s *Weight) getBothWeights() (actual, previous int32) {
 	return atomic.LoadInt32(&s.weight2), atomic.LoadInt32(&s.weight1)
 }
 
-func (s *Server) updateWeight(averageCpu, averageMem int32) {
-	weight := s.weight.getWeight()
+func (s *Server) updateWeight(averageCpu, averageMem int32, weightCoef float64, wType int, wStep float64) {
+	weight := float64(s.weight.getWeight())
 
 	cpuUtil := atomic.LoadInt32(&s.resources.cpuUtil)
 	memUsed := atomic.LoadInt32(&s.resources.memUsed)
@@ -98,7 +104,28 @@ func (s *Server) updateWeight(averageCpu, averageMem int32) {
 	cpuCoef := float64(averageCpu) / float64(cpuUtil)
 	memCoef := float64(averageMem) / float64(memUsed)
 
-	newWeight := math.Round(float64(weight) * cpuCoef * memCoef)
+	var newWeight float64
+
+	switch wType {
+	case 1:
+		newWeight = math.Round(weight * cpuCoef * memCoef * weightCoef)
+	case 2:
+		newWeight = math.Round(float64(s.weight.getStartWeight()) * math.Pow((cpuCoef+memCoef)/2, weightCoef))
+	case 3:
+		wCoef := math.Abs(float64(s.weight.getStartWeight())/weight - 1)
+		newWeight = math.Round(weight * math.Pow((cpuCoef+memCoef+wCoef)/3, weightCoef))
+	}
+
+	lowBound := weight * (1.0 - wStep)
+	highBound := weight * (1.0 + wStep)
+
+	if newWeight > highBound {
+		newWeight = highBound
+	}
+
+	if newWeight < lowBound {
+		newWeight = lowBound
+	}
 
 	if newWeight > 1 {
 		s.weight.setWeight(int32(newWeight))
@@ -149,7 +176,7 @@ func (s *Server) getServerResources(writeTimeout, readTimeout time.Duration) (st
 	return data, nil
 }
 
-func (s *Server) checkServer(cpuUtil, memUsed int32, cfg domain.TimeoutsConfig) {
+func (s *Server) checkServer(cpuUtil, memUsed int32, cfg domain.UpstreamsConfig) {
 	if s.conn == nil || (s.conn != nil && s.isAlive.Load() == 0) {
 		if s.conn != nil {
 			s.conn.Close()
@@ -178,7 +205,7 @@ func (s *Server) checkServer(cpuUtil, memUsed int32, cfg domain.TimeoutsConfig) 
 			log.Printf("%v", err)
 			return
 		}
-		s.updateWeight(cpuUtil, memUsed)
+		s.updateWeight(cpuUtil, memUsed, cfg.WeightCoef, cfg.WeightType, cfg.WeightMaxStep)
 		s.isAlive.Store(1)
 	}
 }

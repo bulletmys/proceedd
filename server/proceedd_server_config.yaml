@@ -1,8 +1,16 @@
 kv:
   port: 8000
-  start_version: 1
   refresh_timeout: 50s
+
 balancer:
+  port: 8080
+  read_timeout: 2s
+  write_timeout: 2s
+  dial_timeout: 5s
+  check_interval: 5s
+  weight_coef: 1
+  weight_max_step: 0.15
+  weight_type: 1
   upstreams:
     - host: 'localhost'
       app_port: 8081
@@ -12,9 +20,3 @@ balancer:
       app_port: 8082
       service_port: 5001
       weight: 5
-
-  port: 8080
-  read_timeout: 2s
-  write_timeout: 2s
-  dial_timeout: 5s
-  check_interval: 5s
