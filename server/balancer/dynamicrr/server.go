@@ -48,7 +48,7 @@ func InitServers(hosts []domain.HostsConfig) ([]Server, error) {
 		}
 		proxy := httputil.NewSingleHostReverseProxy(addr)
 
-		w := Weight{}
+		w := Weight{startWeight: int32(val.Weight)}
 		w.setWeight(int32(val.Weight))
 		server := Server{
 			host:        val.Host,
