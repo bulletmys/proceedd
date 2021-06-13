@@ -72,11 +72,11 @@ func (u *Upstreams) update() {
 }
 
 func (u *Upstreams) updateAverageResources() {
-	aliveCount := int32(0)
-	cpuSum := int32(0)
-	memSum := int32(0)
-
 	for {
+		aliveCount := int32(0)
+		cpuSum := int32(0)
+		memSum := int32(0)
+
 		for i := range u.servers {
 			if u.servers[i].isAlive.Load() == 0 {
 				continue
