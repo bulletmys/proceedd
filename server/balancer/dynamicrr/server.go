@@ -199,7 +199,7 @@ func (s *Server) checkServer(cpuUtil, memUsed int32, cfg domain.UpstreamsConfig)
 		return
 	}
 	if data != "" {
-		log.Printf("Host: %v, Data: %v", s.conn.RemoteAddr(), data)
+		fmt.Printf("Host: %v, Data: %v", s.conn.RemoteAddr(), data)
 		if err := s.resources.parseResources(data); err != nil {
 			s.isAlive.Store(0)
 			log.Printf("%v", err)
