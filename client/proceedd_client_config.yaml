@@ -6,4 +6,4 @@ kv:
   refresh_timeout: 5s
 
 balancer:
-  server_port: "5000"
+  server_port: "5001"

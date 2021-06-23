@@ -100,6 +100,19 @@ func initConfigForDynamicRR(c *config.Config) (domain.UpstreamsConfig, []domain.
 		log.Fatalf("failed to parse config: %v", err)
 	}
 
+	isCpu, err := c.GetBool("balancer.cpu")
+	if err != nil {
+		log.Fatalf("failed to read config: %v", err)
+	}
+	isMem, err := c.GetBool("balancer.mem")
+	if err != nil {
+		log.Fatalf("failed to read config: %v", err)
+	}
+
+	if (isCpu && isMem) || (!isCpu && !isMem) {
+		log.Fatalf("i can`t use cpu and mem param simultaneously")
+	}
+
 	return domain.UpstreamsConfig{
 		CheckInterval: checkIntervalDuration,
 		ReadTimeout:   readTimeoutDuration,
@@ -108,6 +121,7 @@ func initConfigForDynamicRR(c *config.Config) (domain.UpstreamsConfig, []domain.
 		WeightCoef:    weightCoef,
 		WeightType:    wType,
 		WeightMaxStep: wMaxStep,
+		IsCpu:         isCpu,
 	}, upstreamsAddr, port
 
 }
@@ -139,7 +153,7 @@ func Start(c *config.Config) {
 
 func (u *Proxy) handler() func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		log.Println(r.URL)
+		log.Printf("New incoming request from %v, path: %v\n", r.RemoteAddr, r.URL)
 		p := u.balancer.GetUpstreamProxy()
 		p.ServeHTTP(w, r)
 	}

@@ -95,25 +95,30 @@ func (s *Weight) getBothWeights() (actual, previous int32) {
 	return atomic.LoadInt32(&s.weight2), atomic.LoadInt32(&s.weight1)
 }
 
-func (s *Server) updateWeight(averageCpu, averageMem int32, weightCoef float64, wType int, wStep float64) {
+func (s *Server) updateWeight(averageCpu, averageMem int32, weightCoef float64, wType int, wStep float64, cpu bool) {
 	weight := float64(s.weight.getWeight())
 
 	cpuUtil := atomic.LoadInt32(&s.resources.cpuUtil)
 	memUsed := atomic.LoadInt32(&s.resources.memUsed)
 
-	cpuCoef := float64(averageCpu) / (float64(cpuUtil) + 0.001)
-	memCoef := float64(averageMem) / (float64(memUsed) + 0.001)
+	var rCoef float64
+
+	if cpu {
+		rCoef = float64(averageCpu) / (float64(cpuUtil) + 0.001)
+	} else {
+		rCoef = float64(averageMem) / (float64(memUsed) + 0.001)
+	}
 
 	var newWeight float64
 
 	switch wType {
 	case 1:
-		newWeight = math.Round(weight * cpuCoef * weightCoef)
+		newWeight = math.Round(weight * rCoef * weightCoef)
 	case 2:
-		newWeight = math.Round(float64(s.weight.getStartWeight()) * math.Pow(cpuCoef, weightCoef))
+		newWeight = math.Round(float64(s.weight.getStartWeight()) * math.Pow(rCoef, weightCoef))
 	case 3:
 		wCoef := float64(s.weight.getStartWeight())/weight
-		newWeight = math.Round(weight * math.Pow((cpuCoef+wCoef)/2, weightCoef))
+		newWeight = math.Round(weight * math.Pow((rCoef+wCoef)/2, weightCoef))
 	}
 
 	lowBound := math.Round(weight * (1.0 - wStep))
@@ -132,8 +137,8 @@ func (s *Server) updateWeight(averageCpu, averageMem int32, weightCoef float64, 
 	}
 
 	fmt.Printf("%v:%v prevW: %v. actualW: %v\n"+
-		"avgcpu: %v, avgmem: %v, cpu: %v mem: %v, cpuCoef: %v, memCoef: %v\n\n",
-		s.host, s.servicePort, weight, newWeight, averageCpu, averageMem, cpuUtil, memUsed, cpuCoef, memCoef,
+		"avgcpu: %v, avgmem: %v, cpu: %v mem: %v\n\n",
+		s.host, s.servicePort, weight, newWeight, averageCpu, averageMem, cpuUtil, memUsed,
 	)
 }
 
@@ -205,7 +210,7 @@ func (s *Server) checkServer(cpuUtil, memUsed int32, cfg domain.UpstreamsConfig)
 			log.Printf("%v", err)
 			return
 		}
-		s.updateWeight(cpuUtil, memUsed, cfg.WeightCoef, cfg.WeightType, cfg.WeightMaxStep)
+		s.updateWeight(cpuUtil, memUsed, cfg.WeightCoef, cfg.WeightType, cfg.WeightMaxStep, cfg.IsCpu)
 		s.isAlive.Store(1)
 	}
 }

@@ -20,6 +20,7 @@ type UpstreamsConfig struct {
 	WeightCoef    float64
 	WeightType    int
 	WeightMaxStep float64
+	IsCpu         bool
 }
 
 type Balancer interface {

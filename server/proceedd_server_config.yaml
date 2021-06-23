@@ -9,8 +9,10 @@ balancer:
   dial_timeout: 5s
   check_interval: 5s
   weight_coef: 1
-  weight_max_step: 0.15
+  weight_max_step: 0.05
   weight_type: 1
+  cpu: true
+  mem: false
   upstreams:
     - host: 'localhost'
       app_port: 8081
